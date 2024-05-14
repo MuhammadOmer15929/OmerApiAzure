@@ -12,15 +12,12 @@ app = FastAPI()
 handler = Mangum(app)
 
 # Load your generator model for binarization
-
-
-
 binarization_model_path = os.path.join(os.path.dirname(__file__), 'model', 'last_model_with_architecture.h5')
 print(f"Model path: {binarization_model_path}")
 
 # Check if the file exists
 if not os.path.exists(binarization_model_path):
-    print("Model file does not exist.")
+    raise FileNotFoundError(f"Model file not found at {binarization_model_path}")
 else:
     print("Model file found.")
 
