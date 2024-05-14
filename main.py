@@ -6,13 +6,26 @@ from PIL import Image
 import io
 from skimage.transform import resize
 from mangum import Mangum
+import os
 
 app = FastAPI()
 handler = Mangum(app)
 
 # Load your generator model for binarization
-binarization_model_path = 'model/last_model_with_architecture.h5'
+
+
+
+binarization_model_path = os.path.join(os.path.dirname(__file__), 'model', 'last_model_with_architecture.h5')
+print(f"Model path: {binarization_model_path}")
+
+# Check if the file exists
+if not os.path.exists(binarization_model_path):
+    print("Model file does not exist.")
+else:
+    print("Model file found.")
+
 binarization_generator = load_model(binarization_model_path)
+
 
 def split2(dataset, size, h, w):
     newdataset = []
