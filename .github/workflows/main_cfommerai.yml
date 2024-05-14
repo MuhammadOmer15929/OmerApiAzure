@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: List files before zipping
+        run: ls -R
+
       - name: Zip artifact for deployment
         run: |
           zip -r release.zip ./*
@@ -53,6 +56,9 @@ jobs:
 
       - name: Unzip artifact for deployment
         run: unzip release.zip
+
+      - name: List files after unzipping
+        run: ls -R
 
       - name: Login to Azure
         uses: azure/login@v1
