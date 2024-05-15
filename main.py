@@ -4,26 +4,27 @@ from tensorflow.keras.models import load_model
 import numpy as np
 from PIL import Image
 import io
-from skimage.transform import resize
-from mangum import Mangum
+import gdown
 import os
 
 app = FastAPI()
-handler = Mangum(app)
+
+# Google Drive shareable link
+MODEL_URL = 'https://drive.google.com/uc?id=1PLucaH0gaI-euAvtwzwduypUbRchcTQV'
+MODEL_PATH = 'model/last_model_with_architecture.h5'
+
+# Function to download model
+def download_model(model_url, model_path):
+    if not os.path.exists(model_path):
+        gdown.download(model_url, model_path, quiet=False)
+
+# Ensure the model is downloaded
+download_model(MODEL_URL, MODEL_PATH)
 
 # Load your generator model for binarization
-binarization_model_path = os.path.join(os.path.dirname(__file__), 'model', 'last_model_with_architecture.h5')
-print(f"Model path: {binarization_model_path}")
+binarization_generator = load_model(MODEL_PATH)
 
-# Check if the file exists
-if not os.path.exists(binarization_model_path):
-    raise FileNotFoundError(f"Model file not found at {binarization_model_path}")
-else:
-    print("Model file found.")
-
-binarization_generator = load_model(binarization_model_path)
-
-
+# Your existing functions for binarization
 def split2(dataset, size, h, w):
     newdataset = []
     nsize1 = 256
@@ -36,7 +37,7 @@ def split2(dataset, size, h, w):
     return np.array(newdataset)
 
 def merge_image2(splitted_images, h, w):
-    image = np.zeros(((h, w, 1)))
+    image = np.zeros((h, w, 1))
     nsize1 = 256
     nsize2 = 256
     ind = 0
@@ -47,7 +48,6 @@ def merge_image2(splitted_images, h, w):
     return np.array(image)
 
 def apply_binarization(generator, img_array):
-    deg_image = Image.fromarray((img_array * 255).astype(np.uint8))
     h = ((img_array.shape[0] // 256) + 1) * 256
     w = ((img_array.shape[1] // 256) + 1) * 256
     test_padding = np.ones((h, w))
@@ -61,23 +61,20 @@ def apply_binarization(generator, img_array):
     predicted_image = predicted_image[:img_array.shape[0], :img_array.shape[1]]
     predicted_image = predicted_image.reshape(predicted_image.shape[0], predicted_image.shape[1])
     bin_thresh = 0.6
-    binarized_image = (predicted_image[:, :] <= bin_thresh) * 1
+    binarized_image = (predicted_image <= bin_thresh) * 1
     inverted_binarized_image = 1 - binarized_image
     return inverted_binarized_image
 
 @app.post('/enhance_image')
 async def enhance_image(request: Request, file: UploadFile = File(...)):
-    try:
-        contents = await file.read()
-        img = Image.open(io.BytesIO(contents)).convert('L')
-        img_array = np.array(img) / 255.0
-        enhanced_image = apply_binarization(binarization_generator, img_array)
-        enhanced_image_bytes = io.BytesIO()
-        Image.fromarray((enhanced_image * 255).astype(np.uint8)).save(enhanced_image_bytes, format='PNG')
-        enhanced_image_bytes.seek(0)
-        return StreamingResponse(io.BytesIO(enhanced_image_bytes.read()), media_type="application/octet-stream")
-    except Exception as e:
-        return str(e)
+    contents = await file.read()
+    img = Image.open(io.BytesIO(contents)).convert('L')
+    img_array = np.array(img) / 255.0
+    enhanced_image = apply_binarization(binarization_generator, img_array)
+    enhanced_image_bytes = io.BytesIO()
+    Image.fromarray((enhanced_image * 255).astype(np.uint8)).save(enhanced_image_bytes, format='PNG')
+    enhanced_image_bytes.seek(0)
+    return StreamingResponse(io.BytesIO(enhanced_image_bytes.read()), media_type="application/octet-stream")
 
 @app.get('/')
 async def home():
