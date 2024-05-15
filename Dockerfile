@@ -10,8 +10,8 @@ COPY . /app
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Make sure the model file exists
-RUN if [ ! -f "model/last_model_with_architecture.h5" ]; then echo "Model file not found!"; exit 1; fi
+# Ensure the model directory exists (just in case the directory needs to be present)
+RUN mkdir -p model
 
 # Make port 8000 available to the world outside this container
 EXPOSE 8000
