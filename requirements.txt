@@ -5,3 +5,4 @@ Pillow==9.4.0
 scikit-image==0.20.0
 mangum==0.17.0
 uvicorn==0.28.0
+gdown==4.1.1
