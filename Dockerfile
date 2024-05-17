@@ -7,11 +7,6 @@ COPY . /app
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Download model file during build
-RUN pip install gdown && \
-    mkdir -p model && \
-    gdown --id 1PLucaH0gaI-euAvtwzwduypUbRchcTQV -O model/last_model_with_architecture.h5
-
 EXPOSE 8000
 
 CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "main:app"]
