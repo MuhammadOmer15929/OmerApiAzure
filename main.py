@@ -16,6 +16,7 @@ MODEL_PATH = 'model/last_model_with_architecture.h5'
 # Function to download model
 def download_model(model_url, model_path):
     if not os.path.exists(model_path):
+        os.makedirs(os.path.dirname(model_path), exist_ok=True)
         gdown.download(model_url, model_path, quiet=False)
 
 # Ensure the model is downloaded
