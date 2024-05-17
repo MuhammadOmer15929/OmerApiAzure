@@ -4,23 +4,12 @@ from tensorflow.keras.models import load_model
 import numpy as np
 from PIL import Image
 import io
-import gdown
 import os
 
 app = FastAPI()
 
-# Google Drive shareable link
-MODEL_URL = 'https://drive.google.com/uc?id=1PLucaH0gaI-euAvtwzwduypUbRchcTQV'
+# Path to the model file
 MODEL_PATH = 'model/last_model_with_architecture.h5'
-
-# Function to download model
-def download_model(model_url, model_path):
-    if not os.path.exists(model_path):
-        os.makedirs(os.path.dirname(model_path), exist_ok=True)
-        gdown.download(model_url, model_path, quiet=False)
-
-# Ensure the model is downloaded
-download_model(MODEL_URL, MODEL_PATH)
 
 # Load your generator model for binarization
 binarization_generator = load_model(MODEL_PATH)
