@@ -8,8 +8,9 @@ COPY . /app
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Download model file during build
-RUN mkdir -p model && \
-    curl -L 'https://drive.google.com/file/d/1PLucaH0gaI-euAvtwzwduypUbRchcTQV/view?usp=sharing' -o model/last_model_with_architecture.h5
+RUN pip install gdown && \
+    mkdir -p model && \
+    gdown --id 1PLucaH0gaI-euAvtwzwduypUbRchcTQV -O model/last_model_with_architecture.h5
 
 EXPOSE 8000
 
